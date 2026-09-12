@@ -4,6 +4,8 @@ import { getCurrentUser } from "../../../../lib/auth";
 import { supabaseAdmin } from "../../../../lib/supabaseAdmin";
 import { checkRateLimit, getClientIp } from "../../../../lib/rateLimit";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(req) {
   try {
     const ip = getClientIp(req);
@@ -67,7 +69,7 @@ export async function POST(req) {
 
     // 2. Dual-save to Supabase if reachable
     try {
-      if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      if (supabaseAdmin) {
         const { data: supaOrder } = await supabaseAdmin
           .from("orders")
           .insert({

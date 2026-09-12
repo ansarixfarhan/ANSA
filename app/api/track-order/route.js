@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { findOrderByNumber, findOrderById } from "../../../lib/db";
 import { supabase } from "../../../lib/supabase";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req) {
   try {
     const { searchParams } = new URL(req.url);
@@ -16,7 +18,7 @@ export async function GET(req) {
     let order = findOrderByNumber(orderNumber) || findOrderById(orderNumber);
 
     // 2. If not found and Supabase is available, try Supabase
-    if (!order) {
+    if (!order && supabase) {
       try {
         const { data, error } = await supabase
           .from("orders")

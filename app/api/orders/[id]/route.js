@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { findOrderById, findOrderByNumber } from "../../../../lib/db";
 import { supabaseAdmin } from "../../../../lib/supabaseAdmin";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req, { params }) {
   try {
     const { id } = await params;
@@ -9,8 +11,8 @@ export async function GET(req, { params }) {
     // 1. Check local persistent DB
     let order = findOrderById(id) || findOrderByNumber(id);
 
-    // 2. If not found locally, try Supabase
-    if (!order) {
+    // 2. If not found locally, try Supabase (if configured)
+    if (!order && supabaseAdmin) {
       try {
         const { data: supaOrder, error: orderError } = await supabaseAdmin
           .from("orders")
