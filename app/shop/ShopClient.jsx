@@ -1,0 +1,171 @@
+"use client";
+import { useState, useMemo, useEffect } from "react";
+import ProductCard from "../components/ProductCard";
+
+export default function ShopClient({ initialProducts, collections }) {
+  const [search, setSearch] = useState("");
+  const [selectedCollection, setSelectedCollection] = useState("");
+  const [sort, setSort] = useState("newest");
+
+  // Added for view more/less functionality
+  const [visibleCount, setVisibleCount] = useState(12);
+
+  // Reset visible products when filters change
+  useEffect(() => {
+    setVisibleCount(12);
+  }, [search, selectedCollection, sort]);
+
+  const filtered = useMemo(() => {
+    let list = [...initialProducts];
+
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      list = list.filter(
+        (p) =>
+          p.title.toLowerCase().includes(q) ||
+          p.category?.toLowerCase().includes(q) ||
+          p.tags?.some((t) => t.toLowerCase().includes(q))
+      );
+    }
+
+    if (selectedCollection) {
+      list = list.filter((p) =>
+        p.collections?.includes(selectedCollection)
+      );
+    }
+
+    switch (sort) {
+      case "price-asc":
+        list.sort((a, b) => a.price - b.price);
+        break;
+      case "price-desc":
+        list.sort((a, b) => b.price - a.price);
+        break;
+      case "newest":
+      default:
+        break;
+    }
+
+    return list;
+  }, [initialProducts, search, selectedCollection, sort]);
+
+  // Show limited products initially
+  const displayedProducts = filtered.slice(0, visibleCount);
+
+  return (
+    <div className="min-h-screen bg-white">
+      {/* Header */}
+      <div className="bg-gradient-to-br from-amber-50/70 via-stone-50 to-white border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-xs text-[var(--secondary)] font-semibold tracking-widest uppercase font-serif">
+              Men's Designer Collection
+            </span>
+          </div>
+          <h1
+            className="text-3xl sm:text-5xl font-semibold text-gray-900 leading-tight font-serif"
+          >
+            Exclusive Men's Couture
+          </h1>
+          <p className="text-gray-600 text-sm mt-2 font-serif">
+            Wedding & Shadi Wear · Party & Cocktail Tuxedos · Office & Formal Silhouettes ({initialProducts.length} curated designs)
+          </p>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="sticky top-[60px] z-10 bg-white border-b border-gray-100 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap gap-2 items-center">
+          {/* Search */}
+          <input
+            type="text"
+            placeholder="Search sherwanis, blazers, tuxedos..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="px-3.5 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-[var(--secondary)] w-60"
+          />
+
+          {/* Collection filter */}
+          <select
+            value={selectedCollection}
+            onChange={(e) => setSelectedCollection(e.target.value)}
+            className="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-[var(--secondary)] bg-white"
+          >
+            <option value="">All Collections</option>
+            {collections.map((c) => (
+              <option key={c.handle} value={c.handle}>
+                {c.title}
+              </option>
+            ))}
+          </select>
+
+          {/* Sort */}
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value)}
+            className="px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-[var(--secondary)] bg-white"
+          >
+            <option value="newest">Newest First</option>
+            <option value="price-asc">Price: Low to High</option>
+            <option value="price-desc">Price: High to Low</option>
+          </select>
+
+          {/* Result count */}
+          <span className="ml-auto text-xs text-gray-400 hidden sm:block">
+            {filtered.length} results
+          </span>
+        </div>
+      </div>
+
+      {/* Grid */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+        {filtered.length === 0 ? (
+          <div className="text-center py-24">
+            <div className="text-5xl mb-4">🔍</div>
+            <p className="text-gray-500 font-medium text-lg">
+              No products found
+            </p>
+            <button
+              onClick={() => {
+                setSearch("");
+                setSelectedCollection("");
+              }}
+              className="mt-4 px-5 py-2.5 bg-[var(--secondary)] text-white rounded-xl text-sm font-medium hover:bg-[#c03535] transition-colors"
+            >
+              Clear filters
+            </button>
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+              {displayedProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+
+            {/* View More / View Less */}
+            {filtered.length > 12 && (
+              <div className="flex justify-center mt-10">
+                {visibleCount < filtered.length ? (
+                  <button
+                    onClick={() => setVisibleCount((prev) => prev + 12)}
+                    className="px-6 py-3 bg-[var(--secondary)] text-white rounded-xl text-sm font-medium hover:bg-[#c03535] transition-colors cursor-pointer"
+                  >
+                    View More
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setVisibleCount(12)}
+                    className="px-6 py-3 border border-gray-300 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors cursor-pointer"
+                  >
+                    View Less
+                  </button>
+                )}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
