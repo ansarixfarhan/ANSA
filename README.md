@@ -67,7 +67,7 @@ All signature menswear silhouettes and custom royal ensembles are masterfully co
 ### 2. Installation
 ```bash
 # Clone the repository
-git clone https://github.com/farhanansari888/ANSA.git
+git clone https://github.com/ansarixfarhan/ANSA.git
 cd ANSA
 
 # Install dependencies
